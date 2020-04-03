@@ -26,7 +26,8 @@ public class StudentPlayer extends SaboteurPlayer {
         // You probably will make separate functions in MyTools.
         // For example, maybe you'll need to load some pre-processed best opening
         // strategies...
-        MyTools.getSomething();
+    	MyTools myTools = new MyTools(boardState);
+    	myTools.calculatePathDistance(boardState, null);
 
         // Is random the best you can do?
         Move myMove = boardState.getRandomMove();
