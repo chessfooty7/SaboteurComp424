@@ -27,11 +27,13 @@ public class StudentPlayer extends SaboteurPlayer {
         // For example, maybe you'll need to load some pre-processed best opening
         // strategies...
     	MyTools myTools = new MyTools(boardState);
-    	myTools.calculatePathDistance(boardState, null);
-
+    	myTools.displayBoard();
+    	myTools.calculatePathDistance(null);
+    	myTools.getAllTileMoves();
+    	
         // Is random the best you can do?
         Move myMove = boardState.getRandomMove();
-
+        
         // Return your move to be processed by the server.
         return myMove;
     }
