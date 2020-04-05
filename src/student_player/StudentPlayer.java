@@ -72,6 +72,7 @@ public class StudentPlayer extends SaboteurPlayer {
     		}
     		return temp2;
 		}
+    	//
     	return boardState.getRandomMove();
     
     }
