@@ -4,6 +4,7 @@ import boardgame.Move;
 
 import Saboteur.SaboteurPlayer;
 import Saboteur.SaboteurBoardState;
+import Saboteur.SaboteurMove;
 
 /** A player file submitted by a student. */
 public class StudentPlayer extends SaboteurPlayer {
@@ -27,14 +28,20 @@ public class StudentPlayer extends SaboteurPlayer {
         // For example, maybe you'll need to load some pre-processed best opening
         // strategies...
     	MyTools myTools = new MyTools(boardState);
-    	myTools.displayBoard();
-    	myTools.calculatePathDistance(null);
+    	//myTools.displayBoard();
+    	myTools.buildPathGraph();
+    	
     	myTools.getAllTileMoves();
+    	
+    	SaboteurMove move = myTools.calculatePathDistanceForAllLegalTileMoves();
+    	if (move != null) {
+    		System.out.println("Best Move : " + move.toPrettyString());
+    	}
     	
         // Is random the best you can do?
         Move myMove = boardState.getRandomMove();
         
         // Return your move to be processed by the server.
-        return myMove;
+        return move;
     }
 }

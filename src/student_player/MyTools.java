@@ -6,6 +6,34 @@ import Saboteur.SaboteurBoardState;
 import Saboteur.SaboteurMove;
 import Saboteur.cardClasses.SaboteurCard;
 
+class PathNode {
+	
+	PathNode UP;
+	PathNode DOWN;
+	PathNode LEFT;
+	PathNode RIGHT;
+	int x;
+	int y;
+	
+	PathNode(int xVal, int yVal) {
+		UP = null;
+		DOWN = null;
+		LEFT = null;
+		RIGHT = null;
+		x = xVal;
+		y = yVal;
+	}
+}
+
+class PathGraph {
+	
+	PathNode path;
+	
+	PathGraph(PathNode entrance) {
+		path = entrance;
+	}
+}
+
 public class MyTools {
 	
 	SaboteurCard entrance;
@@ -13,6 +41,7 @@ public class MyTools {
 	SaboteurCard hidden2;
 	SaboteurCard hidden3; 
 	SaboteurBoardState boardState;
+	PathGraph pGraph;
 	
 
     public MyTools(SaboteurBoardState sboardState) {
@@ -21,7 +50,11 @@ public class MyTools {
 		hidden2 = sboardState.getHiddenBoard()[12][5];
 		hidden3 = sboardState.getHiddenBoard()[12][7];
 		boardState = sboardState;
+		
+		PathNode pNode = new PathNode(5,5);
+		pGraph = new PathGraph(pNode);
 	}
+    
 
 	public static double getSomething() {
         return Math.random();
@@ -55,7 +88,7 @@ public class MyTools {
 			
 			if (move.getCardPlayed().getName().contains("Tile")) {
 				tileMoves.add(move);
-				System.out.println(move.toPrettyString());
+				//System.out.println(move.toPrettyString());
 			}
 		}
 		
@@ -80,11 +113,27 @@ public class MyTools {
     			return Math.sqrt(xDistance*xDistance + yDistance*yDistance);
     		} else {
     			// Calculate distance to center hidden tile (hidden2)
-    			int xDistance = Math.abs(12 - getNuggetLocation()[0]);
-    			int yDistance = Math.abs(5 - getNuggetLocation()[1]);
+    			int xDistance = Math.abs(move.getPosPlayed()[0] - 12);
+    			int yDistance = Math.abs(move.getPosPlayed()[1] - 5);
     			return Math.sqrt(xDistance*xDistance + yDistance*yDistance);
     		}
     	}
+    }
+    
+    public SaboteurMove calculatePathDistanceForAllLegalTileMoves() {
+    	
+    	SaboteurMove bestMove = null;
+    	double bestDistance = Double.POSITIVE_INFINITY;
+    	for(SaboteurMove move :  getAllTileMoves()) {
+    		double moveDistance = calculatePathDistance(move);
+    		System.out.println("Distance : " + moveDistance );
+    		if (moveDistance < bestDistance) {
+    			bestDistance = moveDistance;
+    			bestMove = move;
+    		}
+    	}
+    	
+    	return bestMove;
     }
     
     /*
@@ -115,7 +164,32 @@ public class MyTools {
     	
     	return false;
     }
+    
+    public void buildPathGraph() {
+    	//TODO
+    	// Figure out how to calculate valid path?
+    	
+    	for(int row = 0; row < boardState.getHiddenBoard().length; row += 3) {
+    		for (int col = 0; col < boardState.getHiddenBoard()[row].length; col += 3) {
+    			int topLeft = boardState.getHiddenIntBoard()[row][col];
+    			int topMid = boardState.getHiddenIntBoard()[row][col+1];
+    			int topRight = boardState.getHiddenIntBoard()[row][col+2];
+    			int midLeft = boardState.getHiddenIntBoard()[row+1][col];
+    			int midMid = boardState.getHiddenIntBoard()[row+1][col+1];
+    			int midRight = boardState.getHiddenIntBoard()[row+1][col+2];
+    			int botLeft = boardState.getHiddenIntBoard()[row+2][col];
+    			int botMid = boardState.getHiddenIntBoard()[row+2][col+1];
+    			int botRight = boardState.getHiddenIntBoard()[row+2][col+2];
+    			System.out.print(topLeft + " " + topMid + " " + topRight + " | ");
+    			System.out.print(midLeft + " " + midMid + " " + midRight + " | ");
+    			System.out.print(botLeft + " " + botMid + " " + botRight + " | ");
+    			System.out.println(" ");
+    		}
+    		System.out.println(" ");
+    	}
+    }
 }
+
 
 
 
