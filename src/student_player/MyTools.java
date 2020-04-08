@@ -1,38 +1,13 @@
 package student_player;
 
 import java.util.ArrayList;
+import java.util.Stack;
 
 import Saboteur.SaboteurBoardState;
 import Saboteur.SaboteurMove;
 import Saboteur.cardClasses.SaboteurCard;
+import Saboteur.cardClasses.SaboteurTile;
 
-class PathNode {
-	
-	PathNode UP;
-	PathNode DOWN;
-	PathNode LEFT;
-	PathNode RIGHT;
-	int x;
-	int y;
-	
-	PathNode(int xVal, int yVal) {
-		UP = null;
-		DOWN = null;
-		LEFT = null;
-		RIGHT = null;
-		x = xVal;
-		y = yVal;
-	}
-}
-
-class PathGraph {
-	
-	PathNode path;
-	
-	PathGraph(PathNode entrance) {
-		path = entrance;
-	}
-}
 
 public class MyTools {
 	
@@ -41,7 +16,6 @@ public class MyTools {
 	SaboteurCard hidden2;
 	SaboteurCard hidden3; 
 	SaboteurBoardState boardState;
-	PathGraph pGraph;
 	
 
     public MyTools(SaboteurBoardState sboardState) {
@@ -50,9 +24,6 @@ public class MyTools {
 		hidden2 = sboardState.getHiddenBoard()[12][5];
 		hidden3 = sboardState.getHiddenBoard()[12][7];
 		boardState = sboardState;
-		
-		PathNode pNode = new PathNode(5,5);
-		pGraph = new PathGraph(pNode);
 	}
     
 
@@ -95,6 +66,48 @@ public class MyTools {
 		
 		return tileMoves;
 	}
+	
+	public ArrayList<SaboteurMove> getAllDropMoves() {
+		ArrayList<SaboteurMove> dropMoves = new ArrayList<>();
+		
+		ArrayList<SaboteurMove> allLegalMoves = boardState.getAllLegalMoves();
+		
+		for (SaboteurMove move : allLegalMoves ) {
+		
+//			System.out.println(move.getCardPlayed().getName().contains("Tile"));
+//			System.out.println(move.getPlayerID());
+//			System.out.println(move.getPosPlayed()[0] + " , " + move.getPosPlayed()[1]);
+			
+			if (move.getCardPlayed().getName().contains("Drop")) {
+				dropMoves.add(move);
+				//System.out.println(move.toPrettyString());
+			}
+		}
+		
+		
+		return dropMoves;
+	}
+	
+	public ArrayList<SaboteurMove> getAllMapMoves() {
+		ArrayList<SaboteurMove> dropMoves = new ArrayList<>();
+		
+		ArrayList<SaboteurMove> allLegalMoves = boardState.getAllLegalMoves();
+		
+		for (SaboteurMove move : allLegalMoves ) {
+		
+//			System.out.println(move.getCardPlayed().getName().contains("Tile"));
+//			System.out.println(move.getPlayerID());
+//			System.out.println(move.getPosPlayed()[0] + " , " + move.getPosPlayed()[1]);
+			
+			if (move.getCardPlayed().getName().contains("Map")) {
+				dropMoves.add(move);
+				//System.out.println(move.toPrettyString());
+			}
+		}
+		
+		
+		return dropMoves;
+	}
     
     public double calculatePathDistance(SaboteurMove move) {
     	
@@ -124,16 +137,56 @@ public class MyTools {
     	
     	SaboteurMove bestMove = null;
     	double bestDistance = Double.POSITIVE_INFINITY;
+    	
+    	SaboteurMove worstMove = null;
+    	double worstDistance = Double.NEGATIVE_INFINITY;
+    	
+    	if (!isNuggetFound() && getAllMapMoves().size() > 0) {
+    		return getAllMapMoves().get(0);
+    	}
+    	
     	for(SaboteurMove move :  getAllTileMoves()) {
     		double moveDistance = calculatePathDistance(move);
     		System.out.println("Distance : " + moveDistance );
-    		if (moveDistance < bestDistance) {
+    		SaboteurTile tile = (SaboteurTile) move.getCardPlayed();
+    		
+    		if (moveDistance < bestDistance && !isWasteMaan(tile) ) {
     			bestDistance = moveDistance;
     			bestMove = move;
     		}
+    		else {
+    			worstDistance = moveDistance;
+    			worstMove = move;
+    		}
+    	}
+    	
+    	if (bestMove == null) {
+    		bestMove = getBestCardToDrop();
+    	}
+    	
+    	if (bestMove == null) {
+    		bestMove = boardState.getAllLegalMoves().get(0);
     	}
     	
     	return bestMove;
+    }
+    
+    public SaboteurMove getBestCardToDrop() {
+    	// fix this for getalldrop moves
+
+    	for (SaboteurMove move : getAllDropMoves()) {
+    		SaboteurCard card = move.getCardPlayed();
+    		System.out.print(card.getName() + " ");
+    		if (card.getName().contains("Bonus")) {
+    			return move;
+    		} else if (card.getName().contains("Destroy")) {
+    			return move;
+    		} else if (card.getName().contains("Malus")) {
+    			return move;
+    		}
+    	}
+    	
+    	return null;
     }
     
     /*
@@ -165,29 +218,161 @@ public class MyTools {
     	return false;
     }
     
-    public void buildPathGraph() {
-    	//TODO
-    	// Figure out how to calculate valid path?
+    // implement depth first search
+    public ArrayList<SaboteurTile> getBestPath(int[] coord) {
+    	ArrayList<SaboteurTile> path = new ArrayList<>();
     	
-    	for(int row = 0; row < boardState.getHiddenBoard().length; row += 3) {
-    		for (int col = 0; col < boardState.getHiddenBoard()[row].length; col += 3) {
-    			int topLeft = boardState.getHiddenIntBoard()[row][col];
-    			int topMid = boardState.getHiddenIntBoard()[row][col+1];
-    			int topRight = boardState.getHiddenIntBoard()[row][col+2];
-    			int midLeft = boardState.getHiddenIntBoard()[row+1][col];
-    			int midMid = boardState.getHiddenIntBoard()[row+1][col+1];
-    			int midRight = boardState.getHiddenIntBoard()[row+1][col+2];
-    			int botLeft = boardState.getHiddenIntBoard()[row+2][col];
-    			int botMid = boardState.getHiddenIntBoard()[row+2][col+1];
-    			int botRight = boardState.getHiddenIntBoard()[row+2][col+2];
-    			System.out.print(topLeft + " " + topMid + " " + topRight + " | ");
-    			System.out.print(midLeft + " " + midMid + " " + midRight + " | ");
-    			System.out.print(botLeft + " " + botMid + " " + botRight + " | ");
-    			System.out.println(" ");
-    		}
-    		System.out.println(" ");
+    	SaboteurTile[] neighbors = getNeighbors(coord);
+    	
+    	while(neighbors.length > 0) {
+    		
     	}
+    	
+    	return path;
     }
+    
+    // dfs
+    public void DFS(SaboteurTile[][] grid) {
+    	
+    	int h = grid.length;
+    	if (h == 0)
+    		return;
+    	
+    	int l = grid[0].length;
+    	
+    	boolean[][] visited = new boolean[h][l];
+    	
+    	Stack<String> stack = new Stack<>();
+    	
+    	stack.push(5 + "," + 5);
+    	
+    	System.out.println("DEPTH-FIRST TRAVERSAL");
+    	
+    	while (stack.empty() == false) {
+    		String x = stack.pop();
+    		int row = Integer.parseInt(x.split(",")[0]);
+    		int col = Integer.parseInt(x.split(",")[1]);
+    		
+    		if (row < 0 || col < 0 || row >= h || col >= l || visited[row][col] || grid[row][col] == null)
+    			continue;
+    		
+    		visited[row][col] = true;
+    		System.out.print("(" + grid[row][col].getName() + ") ");
+    		stack.push(row+ "," + (col-1)); // go left
+    		stack.push(row+ "," + (col+1)); // go right
+    		stack.push((row-1)+ "," + col); // go up
+    		stack.push((row+1)+ "," + col); // go down
+    	}
+    	
+    }
+    
+    /*
+     * Given a coordinate find neighbors
+     * Return 4 neighbors, null if no neighbor
+     * */
+    
+    public SaboteurTile[] getNeighbors(int[] coord) {
+    	SaboteurTile[] neighbors = new SaboteurTile[4];
+    	int row = coord[0];
+    	int col = coord[1];
+    	
+    	int i = 0;
+    	int[][] neighborCoords = new int[][]{{row-1, col}, {row+1, col}, {row, col+1}, {row, col-1}};
+    	for (int[] coords : neighborCoords) {
+    		System.out.println("NULL? : " + boardState.getHiddenBoard()[coords[0]][coords[1]]);
+
+			SaboteurTile tile = boardState.getHiddenBoard()[coords[0]][coords[1]];
+			
+			neighbors[i] = tile;
+
+    		i++;
+    	}
+    	
+    	
+    	return neighbors;
+    }
+    
+    /*
+     * Given two coordinate return if path can continue from a to b
+     * */
+    
+    public boolean legalPathConnectingMove(SaboteurTile center, SaboteurTile neighbor) {
+    	
+    	int[][] centerPath = center.getPath(); // path = {{botl,midl,topl},{mid,mid,mid},{botr,midr,topr}}
+    	int[][] neighborPath = neighbor.getPath();
+    	
+    	// n on top of c
+    	int c = centerPath[1][2];
+    	int n = neighborPath[1][0];
+    	
+    	if (c == 1 && n == 1) {
+    		return true; 
+    	}
+    	
+    	// n on bot of c
+    	c = centerPath[1][0];
+    	n = neighborPath[1][2];
+    	
+    	if (c == 1 && n == 1) {
+    		return true; 
+    	}
+    	
+    	// n on left of c
+    	c = centerPath[0][1];
+    	n = neighborPath[2][1];
+    	
+    	if (c == 1 && n == 1) {
+    		return true; 
+    	}
+    	
+    	// n on right of c
+    	c = centerPath[2][1];
+    	n = neighborPath[0][1];
+    	
+    	if (c == 1 && n == 1) {
+    		return true; 
+    	}
+    	
+    	
+    	return false;
+    }
+    
+    /*
+     * Return if path ending tile move
+     * */
+    
+    public boolean isWasteMaan(SaboteurTile tile) {
+    	
+    	int[][] path = tile.getPath();
+    	int center = path[1][1];
+    	int left = path[0][1];
+    	int right = path[2][1];
+    	int top = path[1][2];
+    	int bottom = path[1][0];
+    	
+    	if (center == 0) {
+    		return true;
+    	}
+    	
+    	int[] temp = new int[] {left,right, top,bottom};
+    	int count = 4;
+    	for (int i = 0; i < 4; i++) {
+    		if (temp[i] == 1) {
+    			count--;
+    		}
+    	}
+    	for (int t : temp) {
+    		
+    	}
+    	
+    	if (count > 2) {
+    		return true;
+    	}
+    	
+    	
+    	return false;
+    }
+    
 }
 
 
