@@ -3,6 +3,8 @@ package student_player;
 import boardgame.Move;
 
 import Saboteur.SaboteurPlayer;
+import Saboteur.cardClasses.SaboteurBonus;
+import Saboteur.cardClasses.SaboteurCard;
 
 import java.util.ArrayList;
 
@@ -30,49 +32,50 @@ public class StudentPlayer extends SaboteurPlayer {
         // You probably will make separate functions in MyTools.
         // For example, maybe you'll need to load some pre-processed best opening
         // strategies...
+    	boardState.printBoard();
     	MyTools myTools = new MyTools(boardState);
-    	myTools.displayBoard();
-    	myTools.calculatePathDistance(null);
-    	myTools.getAllTileMoves();
-    	
-    	
+//    	myTools.displayBoard();
+//    	myTools.calculatePathDistance(null);
+//    	myTools.getAllTileMoves();
+//    	
+//    	
     	ArrayList<SaboteurMove> list = boardState.getAllLegalMoves();  
-    	
-    	//assuming we are player 1, checks if we are blocked
-    	if(boardState.getNbMalus(1)==1) {
-    		for (SaboteurMove move : list) {
-    			if (move.getCardPlayed().getName().contains("Bonus")) {
-    				return move;
-    			}
-    			else {
-    				//drop card
-    			}
-    		}
-    	}
-    	//what to do when we don't know the exact goal state
+//    	
+//    	//assuming we are player 1, checks if we are blocked
+//    	if(boardState.getNbMalus(1)==1) {
+//    		for (SaboteurMove move : list) {
+//    			if (move.getCardPlayed().getName().contains("Bonus")) {
+//    				return SaboteurMove(new SaboteurBonus(), 0, 0, 1);
+//    			}
+//    			else {
+//    				//drop card
+//    			}
+//    		}
+//    	}
+//    	//what to do when we don't know the exact goal state
     	if(!myTools.isNuggetFound()) {
     		for (SaboteurMove move : list) {
-    			if (move.getCardPlayed().getName().contains("Map")) {//how to select the position of where to play the map?
-    				return move;
+    			if (move.getCardPlayed().getName().contains("Map")) {
+    				return new SaboteurMove(new SaboteurBonus(), 5, 12, boardState.getTurnPlayer());
     			}
     		}
     	}
-    	//check if a tile is broken and if we can fix it
-    	//have to implement
+//    	//check if a tile is broken and if we can fix it
+//    	//have to implement
+//    	
+//    	//play a tile move if none of the previous options have applied
+//    	double distance = 200;
+//    	
+//    	for (SaboteurMove move : list) {
+//    		double temp = myTools.calculatePathDistance(move);
+//    		SaboteurMove temp2 = new SaboteurMove(move.getCardPlayed(), 0, 0, 0);//needs editing
+//    		if(temp < distance) {
+//    			distance = temp;
+//    			temp2 = new SaboteurMove(move.getCardPlayed(), 0, 0, 0);
+//    		}
+//    		return temp2;
+//		}
     	
-    	//play a tile move if none of the previous options have applied
-    	double distance = 200;
-    	
-    	for (SaboteurMove move : list) {
-    		double temp = myTools.calculatePathDistance(move);
-    		SaboteurMove temp2 = new SaboteurMove(move.getCardPlayed(), 0, 0, 0);//needs editing
-    		if(temp < distance) {
-    			distance = temp;
-    			temp2 = new SaboteurMove(move.getCardPlayed(), 0, 0, 0);
-    		}
-    		return temp2;
-		}
-    	//
     	return boardState.getRandomMove();
     
     }
